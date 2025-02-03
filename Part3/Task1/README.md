@@ -23,7 +23,7 @@ The steps for running the code for Task 1 are below:-
 
    1.1. The sample command is below:-
 
-      sudo docker cp task2.py 2697ef6189d0:/spark-3.3.4-bin-hadoop3/conf/task2.py
+      sudo docker cp task1.py 2697ef6189d0:/spark-3.3.4-bin-hadoop3/conf/task1.py
 
 2. Now run the .sh file using the following command given below:-
 
