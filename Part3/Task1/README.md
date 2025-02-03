@@ -4,7 +4,7 @@ Task 1 involves implementing a PageRank algorithm with default settings and a gu
 
 The steps for running the code for Task 1 are below:-
 
-## Step 1:- After completing Part0, Part1, and Part2, once the environment is setup, the dataset is copied to the hdfs using the command below:-
+## Step 1:- After completing Part0, Part1, and Part2, once the environment is set, the dataset is copied to the hdfs using the command below:-
 
 1. sudo docker exec -it <container id of hdfs namenode> bash
 2. hdfs dfs -put <dataset to be copied to the hdfs> hdfs://nn:9000/<path to the folder to save the dataset inside hdfs>
@@ -31,4 +31,4 @@ The sample command is below:-
 
 sudo bash run_task1.sh
 
-The above code runs the Python file with two different datasets, i.e., web-BerkStan and enwiki-pages-articles, using the above commands and steps.
+# The above code runs the Python file with two different datasets, web-BerkStan and enwiki-pages-articles, using the above commands and steps. To use both datasets, the file path needs to be changed appropriately in the .sh file to point out the location for the two datasets stored in hdfs, which can be taken from Step 1 above.
