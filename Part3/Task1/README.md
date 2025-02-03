@@ -10,6 +10,7 @@ The steps for running the code for Task 1 are below:-
 2. hdfs dfs -put <dataset to be copied to the hdfs> hdfs://nn:9000/<path to the folder to save the dataset inside hdfs>
 
 The sample command is below:-
+
 hdfs dfs -put export.csv hdfs://nn:9000/data
 
 3. Then exit the container.
@@ -21,6 +22,7 @@ hdfs dfs -put export.csv hdfs://nn:9000/data
 sudo docker cp <python file name that is needed to be copied inside spark master container> <spark master container id>:/spark-3.3.4-bin-hadoop3/conf/<python file name that is being copied to the spark master container>
 
 The sample command is below:-
+
 sudo docker cp task2.py 2697ef6189d0:/spark-3.3.4-bin-hadoop3/conf/task2.py
 
 2. Now run the .sh file using the following command given below:-
