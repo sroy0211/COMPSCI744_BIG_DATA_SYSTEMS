@@ -33,4 +33,4 @@ The steps for running the code for Task 1 are below:-
 
       sudo bash run_task1.sh
 
-# The above code runs the Python file with two different datasets, web-BerkStan and enwiki-pages-articles, using the above commands and steps. To use both datasets, the file path needs to be changed appropriately in the .sh file to point out the location for the two datasets stored in hdfs, which can be taken from Step 1 above.
+### The above code runs the Python file with two different datasets, web-BerkStan and enwiki-pages-articles, using the above commands and steps. To use both datasets, the file path needs to be changed appropriately in the .sh file to point out the location for the two datasets stored in hdfs, which can be taken from Step 1 above.
