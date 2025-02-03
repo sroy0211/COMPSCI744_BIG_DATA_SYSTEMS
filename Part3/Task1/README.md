@@ -4,6 +4,31 @@ Task 1 involves implementing a PageRank algorithm with default settings and a gu
 
 The steps for running the code for Task 1 are below:-
 
-The above code runs the Python file with two different datasets, i.e., web-BerkStan and enwiki-pages-articles using the following command above and the sample command is below:-
+## Step 1:- After completing Part0, Part1, and Part2, once the environment is setup, the dataset is copied to the hdfs using the command below:-
+
+1. sudo docker exec -it <container id of hdfs namenode> bash
+2. hdfs dfs -put <dataset to be copied to the hdfs> hdfs://nn:9000/<path to the folder to save the dataset inside hdfs>
+
+The sample command is below:-
+hdfs dfs -put export.csv hdfs://nn:9000/data
+
+3. Then exit the container.
+   
+## Step 2:- Once the dataset is copied to the hdfs, we will run the .sh file appropriately with the steps shown below:-
+
+1. The Python file needs to be copied to the spark master container to run the .sh file with the following command below:-
+   
+sudo docker cp <python file name that is needed to be copied inside spark master container> <spark master container id>:/spark-3.3.4-bin-hadoop3/conf/<python file name that is being copied to the spark master container>
+
+The sample command is below:-
+sudo docker cp task2.py 2697ef6189d0:/spark-3.3.4-bin-hadoop3/conf/task2.py
+
+2. Now run the .sh file using the following command given below:-
+
+sudo bash <the .sh file needed to run>
+
+The sample command is below:-
 
 sudo bash run_task1.sh
+
+The above code runs the Python file with two different datasets, i.e., web-BerkStan and enwiki-pages-articles, using the above commands and steps.
