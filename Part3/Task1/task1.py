@@ -4,49 +4,55 @@ import re
 import sys
 from operator import add
 from pyspark.sql import SparkSession
+from pyspark.sql.functions import col, split, explode, lit, sum as spark_sum
 
 # The function to compute rank contributions of a page to its linked neighbors
-def prob_compute(pages, rank):
+def compute_probs(pages, rank):
     num_pages = len(pages)
     for page in pages:
         yield (page, rank / num_pages)
 
 # The function to parse a line into (page, neighbor) tuples
-def neighbors_parse(pages):
-    neighbors = re.split(r'\s+', pages) 
+def parse_neighbors(pages):
+    neighbors = re.split(r'\s+', pages)
     return neighbors[0], neighbors[1]
 
 # The main function to execute the PageRank algorithm
-def pagerank(input_path, output_path, num_iters=10):
+def run_pagerank(input_path, output_path, num_partitions=8, num_iters=10):
     init_start = time.time()
     spark = (SparkSession.
             builder.
             appName("PageRank").
             getOrCreate())
+
     init_end = time.time()
-
     # Loading input files
-    lines = spark.read.text(input_path).rdd.map(lambda r: r[0])
+    lines_df = spark.read.text(input_path)
 
-    # Reading the pages in input files and initializing their neighbors
-    links = lines.map(lambda pages: neighbors_parse(pages)).distinct().groupByKey()
-    
-    # Initializing the ranks
-    ranks = links.map(lambda page_neighbors: (page_neighbors[0], 1.0))
+    # Split the input text into source and target columns
+    edges_df = lines_df.withColumn("split", split(col("value"), "\\s+")) \
+            .select(col("split")[0].alias("source"), col("split")[1].alias("target"))
+
+    # Initialize ranks: each page starts with rank 1.0
+    ranks_df = edges_df.select("source").distinct().withColumn("rank", lit(1.0))
     read_end = time.time()
 
-    # Calculating and updating page ranks up to number of iterations
+    # Iteratively update page ranks
     for iteration in range(num_iters):
-        # Calculating page contributions to the rank of other pages
-        probs = links.join(ranks).flatMap(
-                lambda page_pages_rank: prob_compute(page_pages_rank[1][0], page_pages_rank[1][1]))
+        # Compute contributions to target pages
+        contributions_df = edges_df.join(ranks_df, "source", "left") \
+                                   .groupBy("target") \
+                                   .agg(spark_sum(col("rank") / lit(1)).alias("contrib"))
 
-        # Re-calculates page ranks based on neighbor contributions
-        ranks = probs.reduceByKey(add).mapValues(lambda rank: rank * 0.85 + 0.15)
+        # Apply the damping factor
+        ranks_df = contributions_df.withColumn("rank", col("contrib") * 0.85 + 0.15) \
+                                   .select(col("target").alias("source"), "rank")
+
     compute_end = time.time()
         
     # Writing the output
-    ranks.saveAsTextFile(output_path)
+    ranks_df.write.csv(output_path, header=True)
+
     write_end = time.time()
     spark.stop()
     end = time.time()
@@ -59,9 +65,9 @@ def pagerank(input_path, output_path, num_iters=10):
     print("Total time elapsed: " + str(end - init_start) + " sec")
     print("----------------------------------")
 
-if __name__ == "__main__":
+if _name_ == "_main_":
     if len(sys.argv) < 3:
         print("Usage: part3_task1.py <input> <output>")
         sys.exit(-1)
 
-    pagerank(sys.argv[1], sys.argv[2])
+    run_pagerank(sys.argv[1], sys.argv[2])
