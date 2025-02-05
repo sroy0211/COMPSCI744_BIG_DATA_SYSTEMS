@@ -4,7 +4,7 @@ import sys
 
 # Function for sorting the given data based on country code and timestamp
 def spark_application(input_path, output_path):
-    # initialize spark sql instance
+    # Initialize spark sql instance
     spark = (SparkSession
             .builder
             .appName("part2")
