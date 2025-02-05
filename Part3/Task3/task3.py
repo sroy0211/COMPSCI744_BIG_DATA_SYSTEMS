@@ -1,63 +1,66 @@
+# Importing the necessary libraries
 import time
 import re
 import sys
 from operator import add
 from pyspark.sql import SparkSession
+from pyspark.sql.functions import col, split, explode, lit, sum as spark_sum
 
-# Function to distribute the rank of each page evenly among its neighbors
+# The function to compute rank contributions of a page to its linked neighbors
 def compute_probs(pages, rank):
     num_pages = len(pages)
     for page in pages:
         yield (page, rank / num_pages)
 
-# Function to parse the input data and extract the page and its neighbor
+# The function to parse a line into (page, neighbor) tuples
 def parse_neighbors(pages):
-    neighbors = re.split(r'\s+', pages) # Split the line into the page and its neighbors
+    neighbors = re.split(r'\s+', pages)
     return neighbors[0], neighbors[1]
 
-# Function to run the PageRank algorithm
+# The main function to execute the PageRank algorithm
 def run_pagerank(input_path, output_path, num_partitions=8, num_iters=10):
     spark = (SparkSession.
             builder.
             appName("PageRank").
             getOrCreate())
-    
-    # Load the input data and convert it to RDD format
-    lines = spark.read.text(input_path).rdd.map(lambda r: r[0])
 
-    
-    #gatting all input files,reading it ,initializing the neighbors and set it to persist the dataframes
-    links = lines.map(lambda pages: parse_neighbors(pages)).distinct().groupByKey().cache()
-    
-    # Parse the input data and group the pages by their neighbors
-    links = links.repartition(num_partitions)
+    # Loading input files
+    lines_df = spark.read.text(input_path)
 
-    # Initialize the ranks of all pages to 1.0
-    ranks = links.map(lambda page_neighbors: (page_neighbors[0], 1.0)).repartition(num_partitions)
+    # Split the input text into source and target columns
+    edges_df = lines_df.withColumn("split", split(col("value"), "\\s+")) \
+                       .select(col("split")[0].alias("source"), col("split")[1].alias("target")).cache()
 
-    # Run the PageRank algorithm for the specified number of iterations
+    # Repartitioning the links
+    edges_df = edges_df.repartition(num_partitions)
+
+    # Initialize ranks: each page starts with rank 1.0
+    ranks_df = edges_df.select("source").distinct().withColumn("rank", lit(1.0))
+    read_end = time.time()
+
+    # Iteratively update page ranks
     for iteration in range(num_iters):
-        # Calculate the contribution of each page's rank to its neighbors
-        probs = links.join(ranks).flatMap(
-                lambda page_pages_rank: compute_probs(page_pages_rank[1][0], page_pages_rank[1][1]))
+        # Compute contributions to target pages
+        contributions_df = edges_df.join(ranks_df, "source", "left") \
+                                   .groupBy("target") \
+                                   .agg(spark_sum(col("rank") / lit(1)).alias("contrib"))
 
-        # Recompute the rank of each page by aggregating the contributions from its neighbors
-        ranks = probs.reduceByKey(add).mapValues(lambda rank: rank * 0.85 + 0.15).repartition(num_partitions)
-        
-    # Parse the number of partitions from the command-line arguments
-    ranks.saveAsTextFile(output_path)
+        # Apply the damping factor
+        ranks_df = contributions_df.withColumn("rank", col("contrib") * 0.85 + 0.15) \
+                                   .select(col("target").alias("source"), "rank")
 
-    spark.stop()
+     # Writing the output
+    ranks_df.write.csv(output_path, header=True)
 
-# Main execution of the script, handling command-line arguments and timing
-if __name__ == "__main__":
+     spark.stop()
+
+if _name_ == "_main_":
     if len(sys.argv) < 4:
-        print("Usage: pagerank_cache.py <input> <output> <num_partitions>")
+        print("Usage: pagerank_partition.py <input> <output> <num_partition>")
         sys.exit(-1)
 
     num_partitions = sys.argv[3]
     start = time.time()
-    # Run the PageRank algorithm
     run_pagerank(sys.argv[1], sys.argv[2], num_partitions=int(num_partitions))
     end = time.time()
     print("------------------------------")
