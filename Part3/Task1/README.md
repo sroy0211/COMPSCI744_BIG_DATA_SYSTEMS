@@ -27,7 +27,7 @@ The steps for running the code for Task 1 are below:-
 
 2. Now run the .sh file using the following command given below:-
 
-   sudo bash <the .sh file needed to run>
+   sudo bash [the .sh file needed to run]
 
    2.1. The sample command is below:-
 
