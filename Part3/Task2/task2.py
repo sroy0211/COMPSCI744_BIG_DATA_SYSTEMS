@@ -29,7 +29,7 @@ def run_pagerank(input_path, output_path, num_partitions=8, num_iters=10):
 
     # Split the input text into source and target columns
     edges_df = lines_df.withColumn("split", split(col("value"), "\\s+")) \
-                       .select(col("split")[0].alias("source"), col("split")[1].alias("target")).cache()
+                       .select(col("split")[0].alias("source"), col("split")[1].alias("target"))
 
     # Repartitioning the links
     edges_df = edges_df.repartition(num_partitions)
