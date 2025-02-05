@@ -6,8 +6,8 @@ The steps for running the code for Task 2 are below:-
 
 ## Step 1:- After completing Part0, Part1, and Part2, once the environment is set, the dataset is copied to the hdfs using the command below:-
 
-1. sudo docker exec -it <container id of hdfs namenode> bash
-2. hdfs dfs -put <dataset to be copied to the hdfs> hdfs://nn:9000/<path to the folder to save the dataset inside hdfs>
+1. sudo docker exec -it [container id of hdfs namenode] bash
+2. hdfs dfs -put [dataset to be copied to the hdfs] hdfs://nn:9000/[path to the folder to save the dataset inside hdfs]
 
    2.1. The sample command is below:-
 
@@ -19,7 +19,7 @@ The steps for running the code for Task 2 are below:-
 
 1. The Python file needs to be copied to the spark master container to run the .sh file with the following command below:-
 
-   sudo docker cp <python file name that is needed to be copied inside spark master container> <spark master container id>:/spark-3.3.4-bin-   hadoop3/conf/<python file name that is being copied to the spark master container>
+   sudo docker cp [python file name that is needed to be copied inside spark master container] [spark master container id]:/spark-3.3.4-bin-   hadoop3/conf/[python file name that is being copied to the spark master container]
 
    1.1. The sample command is below:-
 
@@ -27,7 +27,7 @@ The steps for running the code for Task 2 are below:-
 
 2. Now run the .sh file using the following command given below:-
 
-   sudo bash <the .sh file needed to run>
+   sudo bash [the .sh file needed to run]
 
    2.1. The sample command is below:-
 
