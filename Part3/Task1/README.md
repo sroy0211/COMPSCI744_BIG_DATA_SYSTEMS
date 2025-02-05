@@ -19,7 +19,7 @@ The steps for running the code for Task 1 are below:-
 
 1. The Python file needs to be copied to the spark master container to run the .sh file with the following command below:-
 
-   sudo docker cp [python file name that is needed to be copied inside spark master container] [spark master container id]:/spark-3.3.4-bin-hadoop3/conf/<python file name that is being copied to the spark master container>
+   sudo docker cp [python file name that is needed to be copied inside spark master container] [spark master container id]:/spark-3.3.4-bin-hadoop3/conf/[python file name that is being copied to the spark master container]
 
    1.1. The sample command is below:-
 
