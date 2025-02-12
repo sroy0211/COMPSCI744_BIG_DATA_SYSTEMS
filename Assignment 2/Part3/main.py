@@ -1,3 +1,5 @@
+# Importing the necessary libraries
+
 import argparse
 import os
 import torch
@@ -16,37 +18,38 @@ from torchvision import datasets, transforms
 from torch.utils.data.distributed import DistributedSampler
 from torch.nn.parallel import DistributedDataParallel as DDP
 
+# Setting up the parameters
+
 device = "cpu"
 torch.set_num_threads(4)
 log_iter = 20
 group_list = []
-
 seed = 2021
 torch.manual_seed(seed)
 np.random.seed(seed)
 
-def train_model(model, train_loader, optimizer, criterion, epoch, rank):
-    """
-    model (torch.nn.module): The model created to train
-    train_loader (pytorch data loader): Training data loader
-    optimizer (optimizer.*): A instance of some sort of optimizer, usually SGD
-    criterion (nn.CrossEntropyLoss) : Loss function used to train the network
-    epoch (int): Current epoch number
-    """
+# Making the function for training the model
 
-    # declare groups 
+def train_model(model, train_loader, optimizer, criterion, epoch, rank):
+    
+    # Declaring the groups 
+    
     group = dist.new_group(group_list)
     group_size = len(group_list)
-    
-    # remember to exit the train loop at end of the epoch
+
     start_time = time.time()
     log_iter_start_time = time.time()
+    
     with open(f'output/{log_file_name}', 'a+') as f:
+        
         for batch_idx, (data, target) in enumerate(train_loader):
+            
             batch_count = batch_idx + 1
+            
             if batch_idx >= stop_iter:
+                
                 break
-            # Reference: https://github.com/pytorch/examples/blob/master/mnist/main.py
+                
             data, target = data.to(device), target.to(device)
             optimizer.zero_grad()
             output = model(data)
@@ -55,25 +58,34 @@ def train_model(model, train_loader, optimizer, criterion, epoch, rank):
 
             optimizer.step()
 
-            # logging
+            # Using logging
+            
             elapsed_time = time.time() - start_time
             f.write(f"{epoch},{batch_count},{elapsed_time}\n")
             start_time = time.time()
 
             if (batch_count % log_iter == 0):
+                
                 log_iter_elapsed_time = time.time() - log_iter_start_time
                 print('Train Epoch: {} \t Iteration: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}\t elapsed time: {:.3f}'.format(
                     epoch, batch_count, batch_count * len(data) * group_size, len(train_loader.dataset),
                     100. * batch_count / len(train_loader), loss.item(), log_iter_elapsed_time)) 
                 log_iter_start_time = time.time()
+                
     return None
 
+# Making the function for testing the model
+
 def test_model(model, test_loader, criterion):
+    
     model.eval()
     test_loss = 0
     correct = 0
+    
     with torch.no_grad():
+        
         for batch_idx, (data, target) in enumerate(test_loader):
+            
             data, target = data.to(device), target.to(device)
             output = model(data)
             test_loss += criterion(output, target)
@@ -85,16 +97,20 @@ def test_model(model, test_loader, criterion):
             test_loss, correct, len(test_loader.dataset),
             100. * correct / len(test_loader.dataset)))
             
+# Function is made to start training in distributed environment
 
 def init_process(master_ip, rank, size, fn, backend='gloo'):
-    """ Initialize the distributed environment. """
+    
+    # Initializing the distributed environment
+    
     dist.init_process_group(backend, init_method=f"tcp://{master_ip}:6585",
                             rank=rank, world_size=size)
     fn(rank, size)
 
-
+# Function is made for the ranks
 
 def run(rank, size):
+    
     normalize = transforms.Normalize(mean=[x/255.0 for x in [125.3, 123.0, 113.9]],
                                 std=[x/255.0 for x in [63.0, 62.1, 66.7]])
     transform_train = transforms.Compose([
@@ -136,11 +152,15 @@ def run(rank, size):
     optimizer = optim.SGD(ddp_model.parameters(), lr=0.1,
                           momentum=0.9, weight_decay=0.0001)
 
+    # Training the model
+    
     for epoch in range(num_epochs):
+        
         train_model(ddp_model, train_loader, optimizer, training_criterion, epoch, rank)
     test_model(ddp_model, test_loader, training_criterion)
     
 if __name__ == "__main__":  
+    
     parser = argparse.ArgumentParser()
     parser.add_argument('--master-ip', type=str, default='10.10.1.1', help='master node ip (default: 10.10.1.1)')
     parser.add_argument('--num-nodes', type=int, default=4, help='the number of nodes (default:4)')
@@ -148,7 +168,6 @@ if __name__ == "__main__":
     parser.add_argument('--epoch', type=int, default=1, help='the number of epochs (default:1)')
     parser.add_argument('--stop_iter', type=int, default=40, help='Stop iteration at, (default: 40)')
     parser.add_argument('--total_batch_size', type=int, default=256, help='total batch size')
-    
     args = parser.parse_args()
 
     global batch_size, num_epochs, stop_iter
@@ -163,10 +182,13 @@ if __name__ == "__main__":
     rank = args.rank
 
     log_file_name = f"timelog_{num_epochs}_{stop_iter}_{num_nodes}_{batch_size}.csv"
+    
     with open(f'output/{log_file_name}', 'w+') as f:
+        
         f.write("epoch,iteration,elpased_time\n")
     
     for group in range(0, num_nodes):
+        
         group_list.append(group)
 
     init_process(args.master_ip, rank, num_nodes, run)
