@@ -156,6 +156,7 @@ def run(rank, size):
     # Training the model
 
     for epoch in range(num_epochs):
+        
         train_model(model, train_loader, optimizer, training_criterion, epoch, rank)
     test_model(model, test_loader, training_criterion)
     
@@ -181,8 +182,11 @@ if __name__ == "__main__":
     rank = args.rank
 
     log_file_name = f"timelog_{num_epochs}_{stop_iter}_{num_nodes}_{batch_size}.csv"
+    
     with open(f'output/{log_file_name}', 'w+') as f:
+        
         f.write("epoch,iteration,elpased_time\n")
     
     for group in range(0, num_nodes):
+        
         group_list.append(group)
