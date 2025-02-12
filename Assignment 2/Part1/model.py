@@ -1,3 +1,5 @@
+# Importing the necessary libraries
+
 import torch.nn as nn
 
 _cfg = {
@@ -7,6 +9,7 @@ _cfg = {
     'VGG19': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 256, 'M', 512, 512, 512, 512, 'M', 512, 512, 512, 512, 'M'],
 }
 
+# Making the layers
 
 def _make_layers(cfg):
     layers = []
@@ -26,6 +29,7 @@ def _make_layers(cfg):
             in_channels = layer_cfg
     return nn.Sequential(*layers)
 
+# Using the VGG model defined in a class
 
 class _VGG(nn.Module):
     """
