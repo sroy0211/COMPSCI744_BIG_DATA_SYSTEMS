@@ -19,7 +19,7 @@ import time
 
 device = "cpu"
 torch.set_num_threads(4)
-batch_size = 256 # batch for one node
+batch_size = 256 
 log_iter = 20
 
 # Making the function for training the model
@@ -89,7 +89,6 @@ def main():
     parser.add_argument('--rank', type=int, default=0, help='rank of node')
     parser.add_argument('--epoch', type=int, default=1, help='the number of epochs (default:1)')
     parser.add_argument('--stop_iter', type=int, default=40, help='Stop iteration at, (default: 40)')
-
     args = parser.parse_args()
     num_epochs = args.epoch
     stop_iter = args.stop_iter
