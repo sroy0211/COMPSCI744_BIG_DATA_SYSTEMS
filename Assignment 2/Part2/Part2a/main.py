@@ -211,6 +211,7 @@ if __name__ == "__main__":
         f.write("epoch,iteration,elpased_time\n")
     
     for group in range(0, num_nodes):
+     
         group_list.append(group)
 
     init_process(args.master_ip, rank, num_nodes, run)
