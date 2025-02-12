@@ -8,7 +8,7 @@ The steps for running the code for Part1 are below:-
 
 The command is:-
 
-python main.py --master-ip <ip of master node> --num-nodes 4 --rank <rank of the node>
+python main.py --master-ip [ip of master node] --num-nodes 4 --rank [rank of the node]
 
 ### The sample command is below:-
 
